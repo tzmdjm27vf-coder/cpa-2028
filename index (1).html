@@ -1,0 +1,2267 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="CPA管理2028" />
+  <title>CPA Study Manager 2028 | TAC 2年L本科生 学習・復習管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', '"Noto Sans JP"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+    }
+    html, body {
+      overflow-x: hidden;
+      background-color: #f8fafc;
+      color: #0f172a;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 9999px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .touch-manipulation {
+      touch-action: manipulation;
+    }
+    .no-select {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+  </style>
+</head>
+<body class="min-h-[100dvh] flex flex-col">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200 px-3 sm:px-6 py-2.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-sm">
+          CPA
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm sm:text-base font-bold text-slate-900 leading-tight">CPA Study Manager 2028</h1>
+            <span id="todayBadge" class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+              基準日: 読み込み中...
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-500 hidden sm:block">TAC 2028年目標 2年L本科生 ｜ 講義・問題別復習・バーチカル連動</p>
+        </div>
+      </div>
+
+      <!-- Countdown & Actions -->
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+        <div class="hidden md:flex items-center gap-2 text-xs bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-200">
+          <span class="text-slate-500">27年12月短答:</span>
+          <span id="shortExamCountdown" class="font-bold text-slate-800">---日</span>
+          <span class="text-slate-300">|</span>
+          <span class="text-slate-500">28年8月論文:</span>
+          <span id="essayExamCountdown" class="font-bold text-indigo-700">---日</span>
+        </div>
+
+        <button onclick="openBackupModal()" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 active:scale-[0.99] transition">
+          <i data-lucide="download" class="w-3.5 h-3.5 text-slate-600"></i>
+          <span>JSON保存/復元</span>
+        </button>
+
+        <button onclick="openSettingsModal()" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 active:scale-[0.99] transition" title="設定">
+          <i data-lucide="settings" class="w-3.5 h-3.5 text-slate-600"></i>
+          <span class="hidden sm:inline">設定</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="max-w-7xl mx-auto mt-2.5 flex items-center gap-1 overflow-x-auto pb-0.5">
+      <button id="tab-today" onclick="switchTab('today')" class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 whitespace-nowrap transition bg-indigo-600 text-white shadow-sm">
+        <i data-lucide="calendar-clock" class="w-4 h-4"></i>
+        <span>今日のタスク・バーチカル</span>
+      </button>
+      <button id="tab-lectures" onclick="switchTab('lectures')" class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 whitespace-nowrap transition text-slate-600 hover:bg-slate-100">
+        <i data-lucide="check-square" class="w-4 h-4"></i>
+        <span>講義・問題別チェックリスト</span>
+      </button>
+      <button id="tab-dashboard" onclick="switchTab('dashboard')" class="tab-btn px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 whitespace-nowrap transition text-slate-600 hover:bg-slate-100">
+        <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+        <span>全体進捗・統計</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-4">
+
+    <!-- ==================== TAB 1: TODAY & VERTICAL ==================== -->
+    <section id="view-today" class="space-y-4">
+      <!-- Date Control Bar -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-3 sm:p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2 flex-wrap">
+          <button onclick="changeSelectedDate(-1)" class="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700" title="前日">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          </button>
+          <div class="flex items-center gap-2">
+            <input type="date" id="selectedDateInput" onchange="setSelectedDate(this.value)" class="px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-bold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            <span id="selectedDateLabel" class="text-xs sm:text-sm font-semibold text-slate-600"></span>
+          </div>
+          <button onclick="changeSelectedDate(1)" class="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700" title="翌日">
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+          <button onclick="jumpToToday()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition">
+            今日へ戻る
+          </button>
+        </div>
+
+        <div class="flex items-center gap-3 text-xs">
+          <div class="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg">
+            <span class="text-slate-500">タスク完了:</span>
+            <span id="todayTaskProgress" class="font-bold text-slate-800 ml-1">0 / 0</span>
+          </div>
+          <div class="bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-lg">
+            <span class="text-indigo-600">バーチカル予定:</span>
+            <span id="todayVerticalHours" class="font-bold text-indigo-800 ml-1">0.0h</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2-Column Layout: Left Tasks / Right Vertical -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+
+        <!-- LEFT: Today's Tasks & Add Forms (5 cols) -->
+        <div class="lg:col-span-5 space-y-3">
+
+          <!-- Add Form 1: TAC Lecture / Review Selector -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2">
+              <button onclick="togglePanel('lectureAddPanel')" class="flex items-center gap-2 text-left font-bold text-xs sm:text-sm text-slate-800">
+                <i data-lucide="book-open-check" class="w-4 h-4 text-indigo-600"></i>
+                <span>TAC講義・問題から追加</span>
+                <i id="lectureAddPanelIcon" data-lucide="chevron-up" class="w-4 h-4 text-slate-400"></i>
+              </button>
+              <button onclick="openCourseFilterModal()" class="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold bg-white border border-slate-300 text-slate-700 hover:bg-slate-100">
+                <i data-lucide="sliders-horizontal" class="w-3 h-3"></i>
+                <span>表示講座を編集</span>
+                <span id="hiddenCourseBadge" class="hidden px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 text-[10px]"></span>
+              </button>
+            </div>
+            <div id="lectureAddPanel" class="p-3.5 space-y-2.5">
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-500 mb-1">1. 講座・セクション</label>
+                <select id="selSection" onchange="onSectionSelectChange()" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></select>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-500 mb-1">2. 講義回</label>
+                  <select id="selLecture" onchange="onLectureSelectChange()" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></select>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-500 mb-1">3. 復習項目 / アクション</label>
+                  <select id="selReviewItem" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"></select>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2 items-end">
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-500 mb-1">予定時間（バーチカル用）</label>
+                  <select id="selLectureDuration" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs bg-white">
+                    <option value="30">30分</option>
+                    <option value="45">45分</option>
+                    <option value="60" selected>60分（1時間）</option>
+                    <option value="90">90分（1.5時間）</option>
+                    <option value="120">120分（2時間）</option>
+                    <option value="150">150分（2.5時間）</option>
+                    <option value="180">180分（3時間）</option>
+                  </select>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <button onclick="addTaskFromSelector(false)" class="flex-1 py-2 px-3 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 transition">
+                    + タスク追加
+                  </button>
+                  <button onclick="addTaskFromSelector(true)" class="py-2 px-2.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-semibold hover:bg-indigo-100 transition" title="今日のタスクとバーチカルの両方に追加">
+                    + 時間割も
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Form 2: University / Personal / Custom Schedule & Task -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <button onclick="togglePanel('customAddPanel')" class="flex items-center gap-2 text-left font-bold text-xs sm:text-sm text-slate-800">
+                <i data-lucide="calendar-plus" class="w-4 h-4 text-emerald-600"></i>
+                <span>大学・自分の予定 / 自由タスクを追加</span>
+                <i id="customAddPanelIcon" data-lucide="chevron-up" class="w-4 h-4 text-slate-400"></i>
+              </button>
+            </div>
+            <div id="customAddPanel" class="p-3.5 space-y-2.5">
+              <div class="grid grid-cols-3 gap-2">
+                <div class="col-span-1">
+                  <label class="block text-[11px] font-semibold text-slate-500 mb-1">予定の種類</label>
+                  <select id="customCategory" class="w-full px-2.5 py-2 rounded-lg border border-slate-300 text-xs bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="study">CPA自習・復習</option>
+                    <option value="univ">大学の授業・ゼミ</option>
+                    <option value="personal">自分の予定・バイト</option>
+                  </select>
+                </div>
+                <div class="col-span-2">
+                  <label class="block text-[11px] font-semibold text-slate-500 mb-1">予定・タスク名</label>
+                  <input type="text" id="customTitleInput" placeholder="例：大学2限 経済学 / バイト / 財計復習" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" onkeydown="if(event.key==='Enter') addCustomTaskOrEvent(false)" />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-3 gap-2 items-end">
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-500 mb-1">開始時刻（任意）</label>
+                  <input type="time" id="customStartTime" step="900" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs bg-white" />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-500 mb-1">所要時間</label>
+                  <select id="customDuration" class="w-full px-2.5 py-2 rounded-lg border border-slate-300 text-xs bg-white">
+                    <option value="30">30分</option>
+                    <option value="45">45分</option>
+                    <option value="60" selected>60分</option>
+                    <option value="90">90分（1コマ）</option>
+                    <option value="120">120分</option>
+                    <option value="180">180分</option>
+                    <option value="240">240分</option>
+                  </select>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button onclick="addCustomTaskOrEvent(false)" class="flex-1 py-2 px-2.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition">
+                    追加
+                  </button>
+                  <button onclick="addCustomTaskOrEvent(true)" class="py-2 px-2 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold hover:bg-emerald-100 transition" title="時間指定してバーチカルへ直接配置">
+                    時間割へ
+                  </button>
+                </div>
+              </div>
+              <p class="text-[11px] text-slate-500">
+                ※ 開始時刻を入れるとバーチカルにも自動配置されます。大学や自分の予定も左リストとバーチカルで相互に連動します。
+              </p>
+            </div>
+          </div>
+
+          <!-- Today's Task List (Bidirectionally synced with Vertical) -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <i data-lucide="list-todo" class="w-4 h-4 text-indigo-600"></i>
+                <h2 class="font-bold text-sm text-slate-800">今日のタスク・予定一覧</h2>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button onclick="quickInsertPendingLectures()" class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition" title="未視聴の講義をピックアップして追加">
+                  + 未視聴講義を投入
+                </button>
+              </div>
+            </div>
+
+            <div class="px-4 py-2 bg-indigo-50/60 border-b border-indigo-100 text-[11px] text-indigo-800 flex items-center justify-between">
+              <span>バーチカルへドラッグ、または「時間割へ配置」ボタンで相互連動</span>
+              <span class="font-semibold">双方向同期ON</span>
+            </div>
+
+            <div id="todayTasksContainer" class="p-3 space-y-2 max-h-[54dvh] overflow-y-auto custom-scroll">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Vertical Timeline (7 cols) -->
+        <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <i data-lucide="clock" class="w-4 h-4 text-indigo-600"></i>
+              <h2 class="font-bold text-sm text-slate-800">バーチカル時間割（05:00 〜 24:00）</h2>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="inline-flex items-center gap-1 text-[11px] text-slate-600">
+                <span class="w-2.5 h-2.5 rounded-sm bg-indigo-500 inline-block"></span>CPA勉強
+              </span>
+              <span class="inline-flex items-center gap-1 text-[11px] text-slate-600">
+                <span class="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block"></span>大学
+              </span>
+              <span class="inline-flex items-center gap-1 text-[11px] text-slate-600">
+                <span class="w-2.5 h-2.5 rounded-sm bg-amber-500 inline-block"></span>自分予定
+              </span>
+              <button onclick="openVerticalQuickModal(540)" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition">
+                + 枠を追加
+              </button>
+            </div>
+          </div>
+
+          <div class="px-4 py-1.5 bg-slate-50/70 border-b border-slate-200 text-[11px] text-slate-500 flex flex-wrap items-center justify-between gap-1">
+            <span>・空き枠タップで予定追加 ／ 枠ドラッグで時刻移動 ／ 下端ハンドルで長さ変更</span>
+            <span>・重なる時間帯は自動で横並び分割表示</span>
+          </div>
+
+          <!-- Scrollable Vertical Grid -->
+          <div id="verticalScrollArea" class="relative overflow-y-auto custom-scroll h-[72dvh] select-none">
+            <div id="verticalCanvas" class="relative w-full" style="height: 1140px;"
+                 ondragover="onVerticalDragOver(event)"
+                 ondrop="onVerticalDrop(event)">
+              <!-- Hour lines & Slots rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: LECTURE & INDIVIDUAL PROBLEM CHECKLIST ==================== -->
+    <section id="view-lectures" class="hidden space-y-4">
+      <div class="bg-white rounded-2xl border border-slate-200 p-3.5 sm:p-4 shadow-sm space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 class="font-bold text-sm sm:text-base text-slate-900">講義視聴 ＆ 個別問題チェックリスト（TAC 2028年目標）</h2>
+            <p class="text-xs text-slate-500 mt-0.5">範囲表記（例：2-2-1〜2-2-3）はすべて1問ずつ個別に分解済みです。バーチカルとも連動します。</p>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <select id="subjectFilterSelect" onchange="renderLecturesTab()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+              <option value="ALL">全科目を表示</option>
+              <option value="財務会計論【計算】">財務会計論【計算】</option>
+              <option value="財務会計論【理論】">財務会計論【理論】</option>
+              <option value="管理会計論">管理会計論</option>
+              <option value="企業法">企業法</option>
+              <option value="監査論">監査論</option>
+              <option value="租税法・経営学・統計学">租税法・経営学・統計学</option>
+            </select>
+            <select id="statusFilterSelect" onchange="renderLecturesTab()" class="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold bg-white">
+              <option value="ALL">すべて（視聴済・未視聴）</option>
+              <option value="UNWATCHED">未視聴のみ</option>
+              <option value="INCOMPLETE_REVIEW">復習残ありのみ</option>
+            </select>
+            <button onclick="expandCollapseAllSections(true)" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-medium hover:bg-slate-50">全展開</button>
+            <button onclick="expandCollapseAllSections(false)" class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-medium hover:bg-slate-50">全折りたたみ</button>
+          </div>
+        </div>
+
+        <!-- Section Quick Jump Chips -->
+        <div id="sectionJumpChips" class="flex items-center gap-1.5 overflow-x-auto pb-1">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <!-- Lecture Sections Scrollable Area -->
+      <div class="relative">
+        <div id="lectureSectionsContainer" class="space-y-3 max-h-[68dvh] overflow-y-auto custom-scroll pr-1">
+          <!-- Rendered dynamically -->
+        </div>
+        <div class="flex justify-end gap-2 mt-2">
+          <button onclick="scrollLectureList('top')" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50">
+            ↑ 一覧の先頭へ
+          </button>
+          <button onclick="scrollLectureList('bottom')" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50">
+            ↓ 一覧の末尾へ
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: DASHBOARD & ANALYTICS ==================== -->
+    <section id="view-dashboard" class="hidden space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div class="text-xs font-semibold text-slate-500">基準日（自動更新）</div>
+          <div id="dashTodayStr" class="text-lg font-bold text-slate-900 mt-1">----</div>
+          <div class="text-[11px] text-indigo-600 mt-1">開いた日の日付に自動で切り替わります</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div class="text-xs font-semibold text-slate-500">2027年12月 短答式試験まで</div>
+          <div id="dashShortDays" class="text-2xl font-bold text-slate-900 mt-1">---日</div>
+          <div class="text-[11px] text-slate-500 mt-1">目標日: 2027年12月12日（目安）</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div class="text-xs font-semibold text-slate-500">2028年8月 論文式試験まで</div>
+          <div id="dashEssayDays" class="text-2xl font-bold text-indigo-700 mt-1">---日</div>
+          <div class="text-[11px] text-slate-500 mt-1">目標日: 2028年8月20日（目安）</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <div class="text-xs font-semibold text-slate-500">個別問題・復習チェック達成率</div>
+          <div id="dashReviewRate" class="text-2xl font-bold text-emerald-600 mt-1">0%</div>
+          <div id="dashReviewDetail" class="text-[11px] text-slate-500 mt-1">0 / 0 問完了</div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+        <h3 class="font-bold text-sm sm:text-base text-slate-900 mb-3">科目別 講義視聴 ＆ 個別問題チェック進捗</h3>
+        <div id="subjectProgressList" class="space-y-3">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Modal: Edit / Add Vertical Block -->
+  <div id="verticalModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 max-w-lg w-full shadow-xl overflow-hidden">
+      <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <h3 id="verticalModalTitle" class="font-bold text-sm text-slate-900">バーチカル予定の編集</h3>
+        <button onclick="closeModal('verticalModal')" class="p-1 rounded-lg hover:bg-slate-200 text-slate-500">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="p-4 space-y-3 max-h-[80dvh] overflow-y-auto custom-scroll">
+        <input type="hidden" id="vmTaskId" />
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-500 mb-1">種別</label>
+            <select id="vmCategory" class="w-full px-2.5 py-2 rounded-lg border border-slate-300 text-xs bg-white">
+              <option value="study">CPA勉強</option>
+              <option value="univ">大学予定</option>
+              <option value="personal">自分予定</option>
+            </select>
+          </div>
+          <div class="col-span-2">
+            <label class="block text-[11px] font-semibold text-slate-500 mb-1">タイトル</label>
+            <input type="text" id="vmTitle" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs sm:text-sm" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-500 mb-1">開始時刻</label>
+            <input type="time" id="vmStartTime" step="900" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs sm:text-sm bg-white" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-500 mb-1">長さ（分）</label>
+            <select id="vmDuration" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs sm:text-sm bg-white">
+              <option value="15">15分</option>
+              <option value="30">30分</option>
+              <option value="45">45分</option>
+              <option value="60">60分（1時間）</option>
+              <option value="75">75分</option>
+              <option value="90">90分（1.5時間）</option>
+              <option value="105">105分</option>
+              <option value="120">120分（2時間）</option>
+              <option value="150">150分（2.5時間）</option>
+              <option value="180">180分（3時間）</option>
+              <option value="240">240分（4時間）</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 pt-1">
+          <input type="checkbox" id="vmCompleted" class="w-4 h-4 rounded text-indigo-600" />
+          <label for="vmCompleted" class="text-xs font-semibold text-slate-700">このタスク・予定を完了にする（今日のタスクにも連動）</label>
+        </div>
+
+        <!-- Linked Lecture Problems Inside Modal -->
+        <div id="vmLinkedProblemsBox" class="hidden border-t border-slate-200 pt-3 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-800">紐づく講義の個別問題チェック</span>
+            <span id="vmLinkedProgress" class="text-[11px] font-semibold text-indigo-600"></span>
+          </div>
+          <div id="vmLinkedProblemsList" class="flex flex-wrap gap-1.5 max-h-44 overflow-y-auto custom-scroll p-2 bg-slate-50 rounded-xl border border-slate-200">
+          </div>
+        </div>
+      </div>
+      <div class="px-4 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-1.5">
+          <button id="vmUnscheduleBtn" onclick="unscheduleFromVertical()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100">
+            時間割から外す
+          </button>
+          <button id="vmDeleteBtn" onclick="deleteTaskCompletely()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100">
+            完全削除
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="closeModal('verticalModal')" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100">
+            キャンセル
+          </button>
+          <button onclick="saveVerticalModal()" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700">
+            保存する
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Course Visibility Filter -->
+  <div id="courseFilterModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 max-w-md w-full shadow-xl overflow-hidden">
+      <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <h3 class="font-bold text-sm text-slate-900">プルダウンに表示する講座を編集</h3>
+        <button onclick="closeModal('courseFilterModal')" class="p-1 rounded-lg hover:bg-slate-200 text-slate-500">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="p-4 space-y-3">
+        <div class="flex items-center gap-2">
+          <button onclick="setCourseVisibilityPreset('all')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100">
+            すべて表示
+          </button>
+          <button onclick="setCourseVisibilityPreset('hideCompleted')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200">
+            全回視聴済みを非表示
+          </button>
+        </div>
+        <div id="courseVisibilityList" class="space-y-1.5 max-h-64 overflow-y-auto custom-scroll border border-slate-200 rounded-xl p-2.5 bg-slate-50">
+        </div>
+      </div>
+      <div class="px-4 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+        <button onclick="closeModal('courseFilterModal')" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white hover:bg-indigo-700">
+          完了
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: JSON Backup / Restore -->
+  <div id="backupModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 max-w-md w-full shadow-xl overflow-hidden">
+      <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <h3 class="font-bold text-sm text-slate-900">学習データのJSON保存・復元</h3>
+        <button onclick="closeModal('backupModal')" class="p-1 rounded-lg hover:bg-slate-200 text-slate-500">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="p-4 space-y-4">
+        <div class="p-3 rounded-xl bg-indigo-50 border border-indigo-200 space-y-2">
+          <div class="font-bold text-xs text-indigo-900">1. バックアップを書き出す（保存）</div>
+          <p class="text-[11px] text-indigo-800">iPad・iPhone・PC間でデータを移すときや、アプリアップデート前に必ず保存してください。</p>
+          <button onclick="exportJsonBackup()" class="w-full py-2 px-3 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700">
+            JSONファイルをダウンロード
+          </button>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+          <div class="font-bold text-xs text-slate-900">2. JSONファイルから復元する（読み込み）</div>
+          <p class="text-[11px] text-slate-600">保存済みの `.json` ファイルを選択すると、チェック履歴やバーチカル予定が復元されます。</p>
+          <input type="file" id="jsonFileInput" accept=".json,application/json" onchange="importJsonBackup(event)" class="block w-full text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-200 file:text-slate-800 hover:file:bg-slate-300" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings -->
+  <div id="settingsModal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 max-w-md w-full shadow-xl overflow-hidden">
+      <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <h3 class="font-bold text-sm text-slate-900">アプリ設定</h3>
+        <button onclick="closeModal('settingsModal')" class="p-1 rounded-lg hover:bg-slate-200 text-slate-500">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="p-4 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">忘却曲線 復習自動生成の間隔（日数・カンマ区切り）</label>
+          <input type="text" id="forgettingDaysInput" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs sm:text-sm" placeholder="1, 3, 7, 14, 30" />
+          <p class="text-[11px] text-slate-500 mt-1">講義を「視聴完了」にしたとき、基準日からこの日数後に復習タスクを自動生成します。</p>
+        </div>
+        <div class="pt-2 border-t border-slate-200">
+          <button onclick="saveSettings()" class="w-full py-2 px-3 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700">
+            設定を保存
+          </button>
+        </div>
+        <div class="pt-3 border-t border-slate-200">
+          <div class="text-xs font-bold text-rose-700 mb-1">データ初期化</div>
+          <button onclick="resetAllData()" class="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold hover:bg-rose-100">
+            初期データ（TACプリセット）に戻す
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== DATE HELPERS (ALWAYS DYNAMIC TODAY) ====================
+    function getLocalTodayStr() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function addDaysToDateStr(dateStr, days) {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const dt = new Date(y, m - 1, d);
+      dt.setDate(dt.getDate() + days);
+      const ny = dt.getFullYear();
+      const nm = String(dt.getMonth() + 1).padStart(2, '0');
+      const nd = String(dt.getDate()).padStart(2, '0');
+      return `${ny}-${nm}-${nd}`;
+    }
+
+    function formatJapaneseDateWithDow(dateStr) {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const dt = new Date(y, m - 1, d);
+      const dows = ['日', '月', '火', '水', '木', '金', '土'];
+      const today = getLocalTodayStr();
+      const suffix = dateStr === today ? '（今日）' : '';
+      return `${y}年${m}月${d}日(${dows[dt.getDay()]})${suffix}`;
+    }
+
+    function diffDaysFromToday(targetDateStr) {
+      const todayStr = getLocalTodayStr();
+      const [ty, tm, td] = todayStr.split('-').map(Number);
+      const [gy, gm, gd] = targetDateStr.split('-').map(Number);
+      const t0 = new Date(ty, tm - 1, td);
+      const t1 = new Date(gy, gm - 1, gd);
+      return Math.max(0, Math.ceil((t1 - t0) / (1000 * 60 * 60 * 24)));
+    }
+
+    // ==================== PROBLEM RANGE EXPANDER (1~3 -> 1, 2, 3) ====================
+    function expandProblemItem(rawText) {
+      const text = rawText.trim();
+      // 1. Handle multi-part hyphenated ranges first, e.g.:
+      // "計算4-2-4〜4-2-9" -> "計算4-2-4" .. "計算4-2-9"
+      // "トレ⑤ 4-1〜4-4" -> "トレ⑤ 4-1" .. "トレ⑤ 4-4"
+      // "トレ③ 短13-1〜13-3" -> "トレ③ 短13-1" .. "トレ③ 短13-3"
+      const fullRepeatMatch = text.match(/^(.*?)(\d+(?:-\d+)*)-(\d+)[〜~－]\2-(\d+)$/);
+      if (fullRepeatMatch) {
+        const label = fullRepeatMatch[1];
+        const stem = fullRepeatMatch[2];
+        const sNum = parseInt(fullRepeatMatch[3], 10);
+        const eNum = parseInt(fullRepeatMatch[4], 10);
+        if (!isNaN(sNum) && !isNaN(eNum) && eNum >= sNum && (eNum - sNum) <= 50) {
+          const items = [];
+          for (let n = sNum; n <= eNum; n++) {
+            items.push(`${label}${stem}-${n}`);
+          }
+          return items;
+        }
+      }
+      // 2. Handle simple integer ranges without hyphen inside numbers, e.g. "入門トレ 12〜24"
+      const simpleRangeMatch = text.match(/^([^〜~－]*?)(\d+)[〜~－](\d+)$/);
+      if (simpleRangeMatch) {
+        const prefix = simpleRangeMatch[1];
+        const startNum = parseInt(simpleRangeMatch[2], 10);
+        const endNum = parseInt(simpleRangeMatch[3], 10);
+        if (!isNaN(startNum) && !isNaN(endNum) && endNum >= startNum && (endNum - startNum) <= 50) {
+          const items = [];
+          for (let n = startNum; n <= endNum; n++) {
+            items.push(`${prefix}${n}`);
+          }
+          return items;
+        }
+      }
+      return [text];
+    }
+
+    function expandProblemList(rawList) {
+      const result = [];
+      rawList.forEach(item => {
+        const expanded = expandProblemItem(item);
+        expanded.forEach(e => {
+          if (!result.includes(e)) result.push(e);
+        });
+      });
+      return result;
+    }
+
+    // ==================== TAC 2028 PRESET DATA ====================
+    function buildInitialSections() {
+      const rawSections = [
+        {
+          id: 'fa_calc_intro',
+          subject: '財務会計論【計算】',
+          title: '財計 入門（全6回）',
+          lectures: [
+            { num: 1, title: '第1回', watched: true, problems: ['テキスト復習', '入門トレ 1〜2', 'ミニテスト①'] },
+            { num: 2, title: '第2回', watched: true, problems: ['テキスト復習', '入門トレ 3〜6', 'ミニテスト②'] },
+            { num: 3, title: '第3回', watched: true, problems: ['テキスト復習', '入門トレ 7〜11', 'ミニテスト③'] },
+            { num: 4, title: '第4回', watched: true, problems: ['テキスト復習', '入門トレ 12〜24', 'ミニテスト④'] },
+            { num: 5, title: '第5回', watched: true, problems: ['テキスト復習', '入門トレ 25〜34'] },
+            { num: 6, title: '第6回', watched: true, problems: ['入門 実力テスト'] }
+          ]
+        },
+        {
+          id: 'fa_calc_bm1',
+          subject: '財務会計論【計算】',
+          title: '財計 基礎マスターI（全18回）',
+          lectures: [
+            { num: 1, title: '第1回', watched: true, problems: ['テキスト復習', 'トレ① 2-1〜2-4', 'トレ① 短2-1', 'ミニテスト①'] },
+            { num: 2, title: '第2回', watched: true, problems: ['テキスト復習', 'トレ① 3-1〜3-2', 'トレ① 4-1〜4-6', 'トレ① 短4-1', 'ミニテスト②'] },
+            { num: 3, title: '第3回', watched: true, problems: ['テキスト復習', 'トレ① 4-7〜4-11', 'トレ② 1-1', 'トレ① 短4-2', 'トレ② 短1-1', 'ミニテスト③'] },
+            { num: 4, title: '第4回', watched: true, problems: ['テキスト復習', 'トレ② 1-2〜1-7', 'トレ② 1-8〜1-9', 'トレ② 短1-2', 'ミニテスト④'] },
+            { num: 5, title: '第5回', watched: true, problems: ['テキスト復習', 'トレ② 2-1', 'トレ② 2-2〜2-8', 'トレ② 短2-1〜2-2', 'ミニテスト⑤'] },
+            { num: 6, title: '第6回', watched: true, problems: ['テキスト復習', 'トレ② 2-9〜2-14', 'トレ② 3-1', 'ミニテスト⑥'] },
+            { num: 7, title: '第7回', watched: true, problems: ['テキスト復習', 'トレ② 4-1〜4-2', 'トレ② 5-1', 'トレ② 短5-1', 'ミニテスト⑦'] },
+            { num: 8, title: '第8回', watched: true, problems: ['実力テスト①'] },
+            { num: 9, title: '第9回', watched: true, problems: ['テキスト復習', 'トレ③ 2-1〜2-3', 'トレ③ 2-4', 'トレ③ 短2-1〜2-2', 'トレ③ 短2-3', 'ミニテスト⑧'] },
+            { num: 10, title: '第10回', watched: true, problems: ['テキスト復習', 'トレ② 6-1〜6-5', 'トレ② 短6-1〜6-2', 'ミニテスト⑨'] },
+            { num: 11, title: '第11回', watched: true, problems: ['テキスト復習', 'トレ② 6-6〜6-7', 'トレ② 短6-3', 'ミニテスト⑩'] },
+            { num: 12, title: '第12回', watched: true, problems: ['テキスト復習', 'トレ① 6-1〜6-5', 'トレ① 短6-1〜6-2', 'ミニテスト⑪'] },
+            { num: 13, title: '第13回', watched: true, problems: ['テキスト復習', 'トレ① 7-1〜7-3', 'トレ② 8-1〜8-2', 'トレ① 短7-1〜7-2', 'トレ② 短8-1', 'ミニテスト⑫'] },
+            { num: 14, title: '第14回', watched: true, problems: ['テキスト復習', 'トレ① 7-4〜7-6', 'トレ① 短7-3', 'ミニテスト⑬'] },
+            { num: 15, title: '第15回', watched: true, problems: ['テキスト復習', 'トレ① 11-1', 'トレ① 12-1〜12-4', 'トレ① 短11-1', 'トレ① 短12-1', 'ミニテスト⑭'] },
+            { num: 16, title: '第16回', watched: true, problems: ['テキスト復習', 'トレ① 12-5〜12-6', 'トレ③ 6-1', 'トレ① 短12-2〜12-3'] },
+            { num: 17, title: '第17回', watched: true, problems: ['テキスト復習', 'トレ③ 6-2', 'トレ② 8-3'] },
+            { num: 18, title: '第18回', watched: true, problems: ['実力テスト②'] }
+          ]
+        },
+        {
+          id: 'fa_calc_bm2',
+          subject: '財務会計論【計算】',
+          title: '財計 基礎マスターII（全16回）',
+          lectures: [
+            { num: 1, title: '第1回', watched: true, problems: ['テキスト復習', 'トレ④ 1-1〜1-4', 'トレ④ 短1-1', 'ミニテスト①'] },
+            { num: 2, title: '第2回', watched: true, problems: ['テキスト復習', 'トレ④ 1-5〜1-7', 'トレ④ 短1-2', 'ミニテスト②'] },
+            { num: 3, title: '第3回', watched: true, problems: ['テキスト復習', 'トレ④ 5-1', 'トレ④ 5-2〜5-5', 'ミニテスト③'] },
+            { num: 4, title: '第4回', watched: true, problems: ['テキスト復習', 'トレ④ 5-6〜5-7', 'トレ④ 6-1', 'ミニテスト④'] },
+            { num: 5, title: '第5回', watched: true, problems: ['テキスト復習', 'トレ④ 7-1', 'トレ④ 8-1', 'トレ④ 短7-1', 'トレ④ 短8-1', 'ミニテスト⑤'] },
+            { num: 6, title: '第6回', watched: true, problems: ['テキスト復習', 'トレ④ 9-1〜9-3', 'トレ④ 短9-1', 'ミニテスト⑥'] },
+            { num: 7, title: '第7回', watched: true, problems: ['テキスト復習', 'トレ④ 11-1〜11-3', 'トレ④ 11-4〜11-5', 'ミニテスト⑦'] },
+            { num: 8, title: '第8回', watched: true, problems: ['テキスト復習', 'トレ④ 11-6〜11-8', 'トレ④ 短11-1'] },
+            { num: 9, title: '第9回', watched: true, problems: ['実力テスト①'] },
+            { num: 10, title: '第10回', watched: true, problems: ['テキスト復習', 'トレ④ 12-1〜12-4', 'トレ④ 短12-1', 'ミニテスト⑧'] },
+            { num: 11, title: '第11回', watched: true, problems: ['テキスト復習', 'トレ④ 13-1〜13-9', 'トレ④ 短13-1〜13-3', 'ミニテスト⑨'] },
+            { num: 12, title: '第12回', watched: true, problems: ['テキスト復習', 'トレ⑦ 1-1〜1-4', 'トレ⑦ 2-1〜2-2', 'トレ⑦ 短2-1〜2-2', 'ミニテスト⑩'] },
+            { num: 13, title: '第13回', watched: true, problems: ['テキスト復習', 'トレ⑦ 8-1〜8-3', 'トレ⑦ 短8-1', 'ミニテスト⑪'] },
+            { num: 14, title: '第14回', watched: true, problems: ['テキスト復習', 'トレ⑦ 8-4〜8-6', 'トレ⑦ 短8-2', 'ミニテスト⑫'] },
+            { num: 15, title: '第15回', watched: true, problems: ['テキスト復習', 'トレ⑦ 8-7〜8-12'] },
+            { num: 16, title: '第16回', watched: true, problems: ['実力テスト②'] }
+          ]
+        },
+        {
+          id: 'fa_calc_bm3',
+          subject: '財務会計論【計算】',
+          title: '財計 基礎マスターIII（全13回）',
+          lectures: [
+            { num: 1, title: '第1回', watched: true, problems: ['テキスト復習', 'トレ③ 4-1〜4-2', 'トレ③ 短4-1〜4-2', 'ミニテスト①'] },
+            { num: 2, title: '第2回', watched: true, problems: ['テキスト復習', 'トレ③ 5-1〜5-2', 'トレ③ 5-4', 'トレ③ 短5-1〜5-2', 'ミニテスト②'] },
+            { num: 3, title: '第3回', watched: true, problems: ['テキスト復習', 'トレ③ 5-3', 'トレ③ 5-5', 'トレ③ 14-1', 'ミニテスト③'] },
+            { num: 4, title: '第4回', watched: true, problems: ['テキスト復習', 'トレ③ 14-2〜14-4', 'トレ③ 短14-1', 'ミニテスト④'] },
+            { num: 5, title: '第5回', watched: true, problems: ['テキスト復習', 'トレ② 12-1', 'ミニテスト⑤'] },
+            { num: 6, title: '第6回', watched: true, problems: ['テキスト復習', 'トレ② 12-2〜12-5', 'トレ② 短12-1', 'ミニテスト⑥'] },
+            { num: 7, title: '第7回', watched: true, problems: ['テキスト復習', 'トレ① 5-1〜5-3', 'トレ③ 12-1', 'ミニテスト⑦'] },
+            { num: 8, title: '第8回', watched: true, problems: ['テキスト復習', 'トレ③ 13-1〜13-2', 'トレ③ 短13-1〜13-3', 'トレ① 短9-1', 'ミニテスト⑧'] },
+            { num: 9, title: '第9回', watched: true, problems: ['テキスト復習', 'トレ① 9-1', 'トレ① 8-1', 'トレ① 短8-1', 'ミニテスト⑨'] },
+            { num: 10, title: '第10回', watched: true, problems: ['テキスト復習', 'トレ① 10-1〜10-2', 'トレ① 短10-1', 'ミニテスト⑩'] },
+            { num: 11, title: '第11回', watched: true, problems: ['テキスト復習', 'トレ② 短9-1〜9-3', 'ミニテスト⑪'] },
+            { num: 12, title: '第12回', watched: true, problems: ['テキスト復習', 'トレ② 10-1〜10-3', 'トレ③ 2-5〜2-6', 'トレ② 短10-1', 'トレ③ 短2-4〜2-5'] },
+            { num: 13, title: '第13回', watched: true, problems: ['実力テスト'] }
+          ]
+        },
+        {
+          id: 'fa_calc_bm4',
+          subject: '財務会計論【計算】',
+          title: '財計 基礎マスターIV（全12回）',
+          lectures: [
+            { num: 1, title: '第1回 (11/6視聴)', watched: true, problems: ['テキスト復習', 'トレ⑤ 2-1〜2-2', 'トレ⑤ 4-1〜4-4', 'ミニテスト①'] },
+            { num: 2, title: '第2回 (11/7視聴)', watched: true, problems: ['テキスト復習', 'トレ⑤ 4-5〜4-11', 'トレ⑤ 6-1', 'トレ⑤ 7-1', 'トレ⑤ 短4-1〜4-2', 'トレ⑤ 短7-1', 'ミニテスト②'] },
+            { num: 3, title: '第3回 (11/16視聴)', watched: true, problems: ['テキスト復習', 'トレ⑤ 8-1', 'トレ⑤ 9-1', 'トレ⑤ 10-1', 'トレ⑤ 11-1', 'ミニテスト③'] },
+            { num: 4, title: '第4回 (11/17配信)', watched: false, problems: ['テキスト復習', 'トレ⑤ 13-1', 'トレ⑥ 2-1〜2-2', 'トレ⑤ 短13-1', 'ミニテスト④'] },
+            { num: 5, title: '第5回 (11/20配信)', watched: false, problems: ['テキスト復習', 'トレ⑥ 2-3', 'トレ⑥ 3-1', 'ミニテスト⑤'] },
+            { num: 6, title: '第6回 (11/24配信)', watched: false, problems: ['テキスト復習', 'トレ⑥ 4-1〜4-2', 'トレ⑥ 5-1', 'トレ⑥ 短4-1〜4-2', 'ミニテスト⑥'] },
+            { num: 7, title: '第7回 (11/27配信)', watched: false, problems: ['テキスト復習', 'トレ⑥ 6-1〜6-2', 'トレ⑥ 短6-1〜6-3', 'ミニテスト⑦'] },
+            { num: 8, title: '第8回 (12/1配信)', watched: false, problems: ['テキスト復習', 'トレ⑥ 7-1〜7-3', 'トレ⑦ 3-1〜3-3', 'トレ⑥ 短7-1', 'トレ⑦ 短3-1〜3-2', 'ミニテスト⑧'] },
+            { num: 9, title: '第9回 (12/4配信)', watched: false, problems: ['テキスト復習', 'トレ⑦ 3-4〜3-5', 'トレ⑦ 4-1〜4-2', 'トレ⑦ 短3-3', 'トレ⑦ 短4-2', 'ミニテスト⑨'] },
+            { num: 10, title: '第10回 (12/8配信)', watched: false, problems: ['テキスト復習', 'トレ⑦ 4-3〜4-6', 'トレ⑦ 短4-1', 'ミニテスト⑩'] },
+            { num: 11, title: '第11回 (12/11配信)', watched: false, problems: ['テキスト復習', 'トレ⑦ 4-7〜4-8', 'トレ⑦ 9-1〜9-2', 'トレ⑦ 短9-1〜9-2'] },
+            { num: 12, title: '第12回 (12/15配信)', watched: false, problems: ['実力テスト'] }
+          ]
+        },
+        {
+          id: 'fa_theory_bm',
+          subject: '財務会計論【理論】',
+          title: '財理 入門基礎マスター（全14回）',
+          lectures: Array.from({ length: 14 }, (_, idx) => ({
+            num: idx + 1,
+            title: `第${idx + 1}回`,
+            watched: idx === 0,
+            problems: ['テキスト・肢別復習', '論点確認']
+          }))
+        },
+        {
+          id: 'ma_intro',
+          subject: '管理会計論',
+          title: '管理 入門（全9回）',
+          lectures: Array.from({ length: 9 }, (_, idx) => ({
+            num: idx + 1,
+            title: `第${idx + 1}回`,
+            watched: true,
+            problems: ['テキスト復習', '入門問題集復習']
+          }))
+        },
+        {
+          id: 'ma_bm',
+          subject: '管理会計論',
+          title: '管理 基礎マスター（全22回）',
+          lectures: [
+            { num: 1, title: '第1回 (9/19配信)', watched: true, problems: ['計算2-2-1〜2-2-3', '計算2-2-6', 'ミニテスト①'] },
+            { num: 2, title: '第2回 (9/26配信)', watched: true, problems: ['計算2-3-1〜2-3-2', '計算3-2-1', 'ミニテスト②'] },
+            { num: 3, title: '第3回 (10/3配信)', watched: true, problems: ['計算3-3-1', '計算3-4-1〜3-4-2', 'ミニテスト③'] },
+            { num: 4, title: '第4回 (10/10配信)', watched: true, problems: ['計算4-2-2', '計算4-2-4〜4-2-9', '計算4-3-1〜4-3-3', 'ミニテスト④'] },
+            { num: 5, title: '第5回 (10/17配信)', watched: true, problems: ['計算5-3-1〜5-3-3', '計算5-4-1', 'ミニテスト⑤'] },
+            { num: 6, title: '第6回 (10/24配信)', watched: true, problems: ['計算6-2-1〜6-2-3', '計算6-3-1〜6-3-2', '計算6-4-1〜6-4-7', 'ミニテスト⑥'] },
+            { num: 7, title: '第7回 (10/31配信)', watched: false, problems: ['計算6-4-8〜6-4-9', '計算6-4-12〜6-4-13', '計算6-5-2〜6-5-10', '計算6-6-1〜6-6-2'] },
+            { num: 8, title: '第8回 (11/7配信)', watched: false, problems: ['実力テスト①'] },
+            { num: 9, title: '第9回 (11/14配信)', watched: false, problems: ['計算6-7-1〜6-7-3', '計算6-8-1〜6-8-3', '計算6-8-6〜6-8-9', 'ミニテスト⑦'] },
+            { num: 10, title: '第10回 (11/21配信)', watched: false, problems: ['計算7-2-1〜7-2-9', 'ミニテスト⑧'] },
+            { num: 11, title: '第11回 (11/28配信)', watched: false, problems: ['計算7-3-1〜7-3-4', 'ミニテスト⑨'] },
+            { num: 12, title: '第12回 (12/5配信)', watched: false, problems: ['計算8-1-1', '計算8-2-1〜8-2-4', '計算8-3-1', '計算8-4-1〜8-4-2', '計算8-5-1〜8-5-2', 'ミニテスト⑩'] },
+            { num: 13, title: '第13回 (12/12配信)', watched: false, problems: ['計算3-2-1〜3-2-7', '計算3-3-1〜3-3-4', '計算3-4-1〜3-4-2', 'ミニテスト⑪'] },
+            { num: 14, title: '第14回', watched: false, problems: ['計算4-1-1', '計算4-3-1〜4-3-4', '計算4-4-1〜4-4-4'] },
+            { num: 15, title: '第15回', watched: false, problems: ['実力テスト②'] },
+            { num: 16, title: '第16回', watched: false, problems: ['計算7-2-1〜7-2-5', '計算8-2-1〜8-2-3', 'ミニテスト⑫'] },
+            { num: 17, title: '第17回', watched: false, problems: ['計算8-3-1〜8-3-4', '計算8-4-1〜8-4-2', '計算8-5-1〜8-5-3', '計算8-6-1〜8-6-2', '計算8-7-1〜8-7-2', 'ミニテスト⑬'] },
+            { num: 18, title: '第18回', watched: false, problems: ['計算9-2-1〜9-2-5', 'ミニテスト⑭'] },
+            { num: 19, title: '第19回', watched: false, problems: ['計算9-4-1〜9-4-3', '計算9-5-1〜9-5-4', '計算9-6-1', 'ミニテスト⑮'] },
+            { num: 20, title: '第20回', watched: false, problems: ['計算10-2-1〜10-2-2', '計算10-4-1', '計算1-3-1〜1-3-2', '計算7-4-1〜7-4-2'] },
+            { num: 21, title: '第21回', watched: false, problems: ['計算7-4-3〜7-4-4', '計算2-4-1〜2-4-2'] },
+            { num: 22, title: '第22回', watched: false, problems: ['実力テスト③'] }
+          ]
+        },
+        {
+          id: 'corp_bm',
+          subject: '企業法',
+          title: '企業法 入門基礎マスター（全20回）',
+          lectures: Array.from({ length: 20 }, (_, idx) => ({
+            num: idx + 1,
+            title: `第${idx + 1}回`,
+            watched: idx < 3,
+            problems: ['テキスト・条文復習', '問題集チェック']
+          }))
+        },
+        {
+          id: 'audit_bm',
+          subject: '監査論',
+          title: '監査論 入門基礎（全5回・2027/2〜）',
+          lectures: Array.from({ length: 5 }, (_, idx) => ({
+            num: idx + 1,
+            title: `第${idx + 1}回`,
+            watched: false,
+            problems: ['テキスト復習']
+          }))
+        },
+        {
+          id: 'other_subjects',
+          subject: '租税法・経営学・統計学',
+          title: '租税法・経営学・統計学（入門・基礎）',
+          lectures: [
+            { num: 1, title: '租税法 入門（全17回）', watched: false, problems: ['講義視聴・復習'] },
+            { num: 2, title: '経営学 入門（全2回）', watched: false, problems: ['講義視聴・復習'] },
+            { num: 3, title: '統計学 入門', watched: false, problems: ['講義視聴・復習'] }
+          ]
+        }
+      ];
+
+      return rawSections.map(sec => ({
+        ...sec,
+        collapsed: false,
+        lectures: sec.lectures.map(lec => {
+          const individualItems = expandProblemList(lec.problems);
+          return {
+            id: `${sec.id}_L${lec.num}`,
+            num: lec.num,
+            title: lec.title,
+            watched: lec.watched,
+            watchedDate: lec.watched ? getLocalTodayStr() : null,
+            items: individualItems.map((label, i) => ({
+              id: `${sec.id}_L${lec.num}_P${i}`,
+              label,
+              done: false
+            }))
+          };
+        })
+      }));
+    }
+
+    // ==================== STATE MANAGEMENT (UNIFIED TASKS + VERTICAL) ====================
+    const STORAGE_KEY = 'cpa_study_manager_2028_v2';
+
+    let appState = {
+      selectedDate: getLocalTodayStr(),
+      forgettingDays: [1, 3, 7, 14, 30],
+      hiddenSectionIds: [],
+      sections: buildInitialSections(),
+      // Unified items: every item is in "today's tasks" for `date`, and if `startMin !== null`, also rendered on the vertical timeline!
+      tasks: []
+    };
+
+    function seedInitialTodayTasks() {
+      const today = getLocalTodayStr();
+      appState.tasks = [
+        {
+          id: 'task_seed_1',
+          date: today,
+          category: 'study',
+          title: '財計 基礎マスターIV 第4回 講義視聴・復習',
+          startMin: 540, // 09:00
+          durationMin: 120,
+          completed: false,
+          sectionId: 'fa_calc_bm4',
+          lectureId: 'fa_calc_bm4_L4',
+          problemId: null
+        },
+        {
+          id: 'task_seed_2',
+          date: today,
+          category: 'study',
+          title: '管理 基礎マスター 第7回 計算問題演習',
+          startMin: 840, // 14:00
+          durationMin: 90,
+          completed: false,
+          sectionId: 'ma_bm',
+          lectureId: 'ma_bm_L7',
+          problemId: null
+        }
+      ];
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          appState = {
+            ...appState,
+            ...parsed,
+            // Always default selectedDate to real TODAY when opening the app
+            selectedDate: getLocalTodayStr()
+          };
+          // Re-align lecture items with clean expanded preset definitions while preserving checked state
+          const cleanSections = buildInitialSections();
+          appState.sections.forEach(sec => {
+            const cleanSec = cleanSections.find(cs => cs.id === sec.id);
+            sec.lectures.forEach(lec => {
+              const cleanLec = cleanSec && cleanSec.lectures.find(cl => cl.id === lec.id);
+              const doneLabels = new Set(lec.items.filter(it => it.done).map(it => it.label));
+              if (cleanLec) {
+                lec.items = cleanLec.items.map(ci => ({
+                  ...ci,
+                  done: doneLabels.has(ci.label)
+                }));
+              }
+            });
+          });
+        } else {
+          seedInitialTodayTasks();
+          saveState();
+        }
+      } catch (e) {
+        console.error('Failed to load state:', e);
+        seedInitialTodayTasks();
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.error('Failed to save state:', e);
+      }
+    }
+
+    // ==================== LOOKUP HELPERS ====================
+    function findSectionAndLecture(sectionId, lectureId) {
+      const sec = appState.sections.find(s => s.id === sectionId);
+      if (!sec) return { sec: null, lec: null };
+      const lec = sec.lectures.find(l => l.id === lectureId);
+      return { sec, lec };
+    }
+
+    function minToTimeStr(totalMin) {
+      const clamped = Math.max(300, Math.min(1440, totalMin));
+      const h = Math.floor(clamped / 60);
+      const m = clamped % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+
+    function timeStrToMin(timeStr) {
+      if (!timeStr || !timeStr.includes(':')) return null;
+      const [h, m] = timeStr.split(':').map(Number);
+      if (isNaN(h) || isNaN(m)) return null;
+      return h * 60 + m;
+    }
+
+    // ==================== BIDIRECTIONAL SYNC ENGINE ====================
+    // 1. Toggling a task's completion updates linked problem/lecture & re-renders both Today list and Vertical
+    function toggleTaskComplete(taskId) {
+      const task = appState.tasks.find(t => t.id === taskId);
+      if (!task) return;
+      task.completed = !task.completed;
+
+      if (task.sectionId && task.lectureId) {
+        const { lec } = findSectionAndLecture(task.sectionId, task.lectureId);
+        if (lec) {
+          if (task.problemId) {
+            const prob = lec.items.find(p => p.id === task.problemId);
+            if (prob) prob.done = task.completed;
+          } else if (task.isLectureWatchTask) {
+            lec.watched = task.completed;
+            lec.watchedDate = task.completed ? task.date : null;
+          }
+        }
+      }
+      saveState();
+      renderAll();
+    }
+
+    // 2. Toggling an individual problem item updates lecture checklist, linked tasks, and vertical badges
+    function toggleIndividualProblem(sectionId, lectureId, problemId) {
+      const { lec } = findSectionAndLecture(sectionId, lectureId);
+      if (!lec) return;
+      const prob = lec.items.find(p => p.id === problemId);
+      if (!prob) return;
+      prob.done = !prob.done;
+
+      // Sync any task specifically targeting this problem
+      appState.tasks.forEach(t => {
+        if (t.sectionId === sectionId && t.lectureId === lectureId && t.problemId === problemId) {
+          t.completed = prob.done;
+        }
+        // If a task represents the whole lecture's exercises and ALL items are now done, mark it completed
+        if (t.sectionId === sectionId && t.lectureId === lectureId && !t.problemId && !t.isLectureWatchTask) {
+          const allDone = lec.items.length > 0 && lec.items.every(it => it.done);
+          t.completed = allDone;
+        }
+      });
+
+      saveState();
+      renderAll();
+      // If vertical modal is currently open for this lecture, refresh it
+      const openTaskId = document.getElementById('vmTaskId').value;
+      if (openTaskId && !document.getElementById('verticalModal').classList.contains('hidden')) {
+        const openTask = appState.tasks.find(t => t.id === openTaskId);
+        if (openTask && openTask.lectureId === lectureId) {
+          populateVerticalModalProblems(openTask);
+        }
+      }
+    }
+
+    // 3. Toggling lecture watched status
+    function toggleLectureWatched(sectionId, lectureId) {
+      const { sec, lec } = findSectionAndLecture(sectionId, lectureId);
+      if (!lec) return;
+      lec.watched = !lec.watched;
+      lec.watchedDate = lec.watched ? getLocalTodayStr() : null;
+
+      // Sync linked watch tasks
+      appState.tasks.forEach(t => {
+        if (t.sectionId === sectionId && t.lectureId === lectureId && t.isLectureWatchTask) {
+          t.completed = lec.watched;
+        }
+      });
+
+      // Auto-generate forgetting curve review tasks if newly watched
+      if (lec.watched && appState.forgettingDays.length > 0) {
+        const baseDate = getLocalTodayStr();
+        appState.forgettingDays.forEach(offset => {
+          const targetDate = addDaysToDateStr(baseDate, offset);
+          const alreadyExists = appState.tasks.some(
+            t => t.date === targetDate && t.lectureId === lectureId && t.title.includes(`【${offset}日後復習】`)
+          );
+          if (!alreadyExists) {
+            appState.tasks.push({
+              id: `fg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+              date: targetDate,
+              category: 'study',
+              title: `【${offset}日後復習】${sec.title} ${lec.title}`,
+              startMin: null,
+              durationMin: 45,
+              completed: false,
+              sectionId: sec.id,
+              lectureId: lec.id,
+              problemId: null
+            });
+          }
+        });
+      }
+
+      saveState();
+      renderAll();
+    }
+
+    // ==================== ADDING TASKS / UNIVERSITY & PERSONAL EVENTS ====================
+    function addTaskFromSelector(alsoPlaceOnVertical) {
+      const secId = document.getElementById('selSection').value;
+      const lecId = document.getElementById('selLecture').value;
+      const itemVal = document.getElementById('selReviewItem').value;
+      const duration = parseInt(document.getElementById('selLectureDuration').value, 10) || 60;
+
+      const { sec, lec } = findSectionAndLecture(secId, lecId);
+      if (!sec || !lec) return;
+
+      let title = '';
+      let problemId = null;
+      let isLectureWatchTask = false;
+
+      if (itemVal === '__WATCH__') {
+        title = `${sec.title} ${lec.title} 講義視聴`;
+        isLectureWatchTask = true;
+      } else if (itemVal === '__ALL_EXERCISES__') {
+        title = `${sec.title} ${lec.title} トレーニング・復習演習`;
+      } else {
+        const prob = lec.items.find(p => p.id === itemVal);
+        title = `${sec.title} ${lec.title}：${prob ? prob.label : itemVal}`;
+        problemId = prob ? prob.id : null;
+      }
+
+      const startMin = alsoPlaceOnVertical ? findNextAvailableSlotMin(appState.selectedDate, duration) : null;
+
+      appState.tasks.push({
+        id: `task_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        date: appState.selectedDate,
+        category: 'study',
+        title,
+        startMin,
+        durationMin: duration,
+        completed: false,
+        sectionId: sec.id,
+        lectureId: lec.id,
+        problemId,
+        isLectureWatchTask
+      });
+
+      saveState();
+      renderAll();
+    }
+
+    function addCustomTaskOrEvent(forcePlaceOnVertical) {
+      const category = document.getElementById('customCategory').value;
+      const titleInput = document.getElementById('customTitleInput');
+      const title = titleInput.value.trim();
+      if (!title) {
+        titleInput.focus();
+        return;
+      }
+      const startTimeStr = document.getElementById('customStartTime').value;
+      const duration = parseInt(document.getElementById('customDuration').value, 10) || 60;
+
+      let startMin = timeStrToMin(startTimeStr);
+      if (startMin !== null) {
+        startMin = Math.max(300, Math.min(1440 - duration, Math.round(startMin / 15) * 15));
+      } else if (forcePlaceOnVertical) {
+        startMin = findNextAvailableSlotMin(appState.selectedDate, duration);
+      }
+
+      appState.tasks.push({
+        id: `custom_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        date: appState.selectedDate,
+        category,
+        title,
+        startMin,
+        durationMin: duration,
+        completed: false,
+        sectionId: null,
+        lectureId: null,
+        problemId: null
+      });
+
+      titleInput.value = '';
+      document.getElementById('customStartTime').value = '';
+      saveState();
+      renderAll();
+    }
+
+    function findNextAvailableSlotMin(dateStr, durationMin) {
+      const dayEvents = appState.tasks
+        .filter(t => t.date === dateStr && t.startMin !== null)
+        .sort((a, b) => a.startMin - b.startMin);
+
+      // Try from 09:00 (540) to 22:30 (1350)
+      for (let m = 540; m <= 1440 - durationMin; m += 30) {
+        const conflict = dayEvents.some(ev => !(m + durationMin <= ev.startMin || m >= ev.startMin + ev.durationMin));
+        if (!conflict) return m;
+      }
+      return 540; // Fallback 09:00 (overlap layout handles it cleanly)
+    }
+
+    function assignTaskToVertical(taskId) {
+      const task = appState.tasks.find(t => t.id === taskId);
+      if (!task) return;
+      if (task.startMin === null) {
+        task.startMin = findNextAvailableSlotMin(task.date, task.durationMin || 60);
+      }
+      saveState();
+      renderAll();
+    }
+
+    function removeTaskFromVertical(taskId) {
+      const task = appState.tasks.find(t => t.id === taskId);
+      if (!task) return;
+      task.startMin = null;
+      saveState();
+      renderAll();
+    }
+
+    function deleteTaskById(taskId) {
+      appState.tasks = appState.tasks.filter(t => t.id !== taskId);
+      saveState();
+      renderAll();
+    }
+
+    function quickInsertPendingLectures() {
+      const pending = [];
+      appState.sections.forEach(sec => {
+        if (appState.hiddenSectionIds.includes(sec.id)) return;
+        sec.lectures.forEach(lec => {
+          if (!lec.watched) {
+            pending.push({ sec, lec });
+          }
+        });
+      });
+
+      if (pending.length === 0) {
+        alert('表示中の講座に未視聴の講義はありません！');
+        return;
+      }
+
+      const toAdd = pending.slice(0, 2);
+      toAdd.forEach(({ sec, lec }) => {
+        const exists = appState.tasks.some(
+          t => t.date === appState.selectedDate && t.lectureId === lec.id && t.isLectureWatchTask
+        );
+        if (!exists) {
+          appState.tasks.push({
+            id: `pending_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+            date: appState.selectedDate,
+            category: 'study',
+            title: `${sec.title} ${lec.title} 講義視聴`,
+            startMin: null,
+            durationMin: 120,
+            completed: false,
+            sectionId: sec.id,
+            lectureId: lec.id,
+            problemId: null,
+            isLectureWatchTask: true
+          });
+        }
+      });
+
+      saveState();
+      renderAll();
+    }
+
+    // ==================== RENDER: HEADER & DATE ====================
+    function renderHeaderAndDate() {
+      const todayStr = getLocalTodayStr();
+      document.getElementById('todayBadge').textContent = `基準日: ${formatJapaneseDateWithDow(todayStr)}`;
+      document.getElementById('shortExamCountdown').textContent = `${diffDaysFromToday('2027-12-12')}日`;
+      document.getElementById('essayExamCountdown').textContent = `${diffDaysFromToday('2028-08-20')}日`;
+
+      const dateInput = document.getElementById('selectedDateInput');
+      dateInput.value = appState.selectedDate;
+      document.getElementById('selectedDateLabel').textContent = formatJapaneseDateWithDow(appState.selectedDate);
+    }
+
+    function setSelectedDate(newDate) {
+      if (!newDate) return;
+      appState.selectedDate = newDate;
+      saveState();
+      renderAll();
+    }
+
+    function changeSelectedDate(deltaDays) {
+      appState.selectedDate = addDaysToDateStr(appState.selectedDate, deltaDays);
+      saveState();
+      renderAll();
+    }
+
+    function jumpToToday() {
+      appState.selectedDate = getLocalTodayStr();
+      saveState();
+      renderAll();
+    }
+
+    // ==================== RENDER: SELECTORS ====================
+    function renderTaskSelectors() {
+      const secSelect = document.getElementById('selSection');
+      const prevSec = secSelect.value;
+      const visibleSections = appState.sections.filter(s => !appState.hiddenSectionIds.includes(s.id));
+
+      secSelect.innerHTML = visibleSections.map(s => `<option value="${s.id}">${s.title}</option>`).join('');
+      if (visibleSections.some(s => s.id === prevSec)) {
+        secSelect.value = prevSec;
+      }
+
+      const hiddenBadge = document.getElementById('hiddenCourseBadge');
+      if (appState.hiddenSectionIds.length > 0) {
+        hiddenBadge.textContent = `${appState.hiddenSectionIds.length}非表示`;
+        hiddenBadge.classList.remove('hidden');
+      } else {
+        hiddenBadge.classList.add('hidden');
+      }
+
+      onSectionSelectChange();
+    }
+
+    function onSectionSelectChange() {
+      const secId = document.getElementById('selSection').value;
+      const lecSelect = document.getElementById('selLecture');
+      const prevLec = lecSelect.value;
+      const sec = appState.sections.find(s => s.id === secId);
+      if (!sec) {
+        lecSelect.innerHTML = '';
+        return;
+      }
+      lecSelect.innerHTML = sec.lectures.map(l => {
+        const mark = l.watched ? '✓ ' : '・';
+        return `<option value="${l.id}">${mark}${l.title}</option>`;
+      }).join('');
+
+      if (sec.lectures.some(l => l.id === prevLec)) {
+        lecSelect.value = prevLec;
+      } else {
+        const firstUnwatched = sec.lectures.find(l => !l.watched);
+        if (firstUnwatched) lecSelect.value = firstUnwatched.id;
+      }
+      onLectureSelectChange();
+    }
+
+    function onLectureSelectChange() {
+      const secId = document.getElementById('selSection').value;
+      const lecId = document.getElementById('selLecture').value;
+      const itemSelect = document.getElementById('selReviewItem');
+      const { lec } = findSectionAndLecture(secId, lecId);
+      if (!lec) {
+        itemSelect.innerHTML = '';
+        return;
+      }
+
+      let html = `
+        <option value="__ALL_EXERCISES__">トレーニング・復習演習（まとめて）</option>
+        <option value="__WATCH__">講義視聴（${lec.title}）</option>
+      `;
+      lec.items.forEach(it => {
+        html += `<option value="${it.id}">${it.done ? '✓ ' : '□ '}${it.label}</option>`;
+      });
+      itemSelect.innerHTML = html;
+    }
+
+    // ==================== RENDER: TODAY'S TASK LIST ====================
+    function getCategoryMeta(category) {
+      if (category === 'univ') {
+        return {
+          label: '大学予定',
+          badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+          blockBg: 'bg-emerald-50 border-emerald-400 text-emerald-950',
+          accentBar: 'bg-emerald-500'
+        };
+      }
+      if (category === 'personal') {
+        return {
+          label: '自分予定',
+          badgeClass: 'bg-amber-100 text-amber-800 border-amber-200',
+          blockBg: 'bg-amber-50 border-amber-400 text-amber-950',
+          accentBar: 'bg-amber-500'
+        };
+      }
+      return {
+        label: 'CPA勉強',
+        badgeClass: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+        blockBg: 'bg-indigo-50 border-indigo-400 text-indigo-950',
+        accentBar: 'bg-indigo-600'
+      };
+    }
+
+    function renderTodayTasksList() {
+      const container = document.getElementById('todayTasksContainer');
+      const dayTasks = appState.tasks
+        .filter(t => t.date === appState.selectedDate)
+        .sort((a, b) => {
+          if (a.startMin !== null && b.startMin !== null) return a.startMin - b.startMin;
+          if (a.startMin !== null) return -1;
+          if (b.startMin !== null) return 1;
+          return 0;
+        });
+
+      const doneCount = dayTasks.filter(t => t.completed).length;
+      document.getElementById('todayTaskProgress').textContent = `${doneCount} / ${dayTasks.length}`;
+
+      const scheduledMins = dayTasks.filter(t => t.startMin !== null).reduce((sum, t) => sum + (t.durationMin || 60), 0);
+      document.getElementById('todayVerticalHours').textContent = `${(scheduledMins / 60).toFixed(1)}h`;
+
+      if (dayTasks.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-xs text-slate-400">
+            この日のタスク・予定はまだありません。<br/>上のフォームから講義・問題や大学・自分の予定を追加できます。
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = dayTasks.map(task => {
+        const meta = getCategoryMeta(task.category);
+        const isScheduled = task.startMin !== null;
+        const timeRange = isScheduled
+          ? `${minToTimeStr(task.startMin)}〜${minToTimeStr(task.startMin + task.durationMin)} (${task.durationMin}分)`
+          : `未配置 (${task.durationMin}分)`;
+
+        // Check linked lecture progress if any
+        let linkedSummary = '';
+        if (task.sectionId && task.lectureId && !task.problemId && !task.isLectureWatchTask) {
+          const { lec } = findSectionAndLecture(task.sectionId, task.lectureId);
+          if (lec && lec.items.length > 0) {
+            const doneProbs = lec.items.filter(p => p.done).length;
+            linkedSummary = `<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700">問題 ${doneProbs}/${lec.items.length}</span>`;
+          }
+        }
+
+        return `
+          <div draggable="true"
+               ondragstart="onTaskDragStart(event, '${task.id}')"
+               class="group rounded-xl border ${task.completed ? 'bg-slate-50 border-slate-200 opacity-75' : 'bg-white border-slate-200 hover:border-indigo-300'} p-2.5 shadow-2xs transition cursor-grab active:cursor-grabbing">
+            <div class="flex items-start gap-2.5">
+              <button onclick="toggleTaskComplete('${task.id}')" class="mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition ${task.completed ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300 bg-white hover:border-indigo-500'}">
+                ${task.completed ? '<i data-lucide="check" class="w-3.5 h-3.5"></i>' : ''}
+              </button>
+
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded border ${meta.badgeClass}">${meta.label}</span>
+                  <span class="text-[11px] font-semibold ${isScheduled ? 'text-indigo-700' : 'text-slate-400'}">
+                    ${isScheduled ? '🕒 ' + timeRange : '📌 ' + timeRange}
+                  </span>
+                  ${linkedSummary}
+                </div>
+
+                <div class="text-xs sm:text-sm font-semibold text-slate-800 break-words ${task.completed ? 'line-through text-slate-400' : ''}">
+                  ${escapeHtml(task.title)}
+                </div>
+
+                <div class="mt-2 flex items-center gap-1.5 flex-wrap">
+                  ${isScheduled
+                    ? `<button onclick="openVerticalEditModal('${task.id}')" class="px-2 py-1 rounded-md text-[11px] font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100">時間変更・詳細</button>
+                       <button onclick="removeTaskFromVertical('${task.id}')" class="px-2 py-1 rounded-md text-[11px] font-medium bg-slate-100 text-slate-600 hover:bg-slate-200">時間割から外す</button>`
+                    : `<button onclick="assignTaskToVertical('${task.id}')" class="px-2 py-1 rounded-md text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700">時間割へ配置</button>`
+                  }
+                  <button onclick="deleteTaskById('${task.id}')" class="ml-auto p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50" title="削除">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ==================== RENDER: VERTICAL TIMELINE (OVERLAP-FREE & CLEAN VISUALS) ====================
+    // 05:00 (300 min) to 24:00 (1440 min) = 1140 minutes -> 1px per minute = 1140px height
+    const START_DAY_MIN = 300;
+    const END_DAY_MIN = 1440;
+    const PX_PER_MIN = 1.0;
+
+    function computeOverlapLayout(events) {
+      // Standard interval graph column packing so overlapping events NEVER cover each other
+      const sorted = [...events].sort((a, b) => a.startMin - b.startMin || b.durationMin - a.durationMin);
+      const clusters = [];
+      let currentCluster = [];
+      let clusterEnd = -1;
+
+      sorted.forEach(ev => {
+        const evEnd = ev.startMin + ev.durationMin;
+        if (currentCluster.length === 0 || ev.startMin < clusterEnd) {
+          currentCluster.push(ev);
+          clusterEnd = Math.max(clusterEnd, evEnd);
+        } else {
+          clusters.push(currentCluster);
+          currentCluster = [ev];
+          clusterEnd = evEnd;
+        }
+      });
+      if (currentCluster.length > 0) clusters.push(currentCluster);
+
+      const positioned = [];
+      clusters.forEach(cluster => {
+        const columns = [];
+        cluster.forEach(ev => {
+          let placedCol = -1;
+          for (let c = 0; c < columns.length; c++) {
+            const lastInCol = columns[c][columns[c].length - 1];
+            if (lastInCol.startMin + lastInCol.durationMin <= ev.startMin) {
+              placedCol = c;
+              break;
+            }
+          }
+          if (placedCol === -1) {
+            placedCol = columns.length;
+            columns.push([]);
+          }
+          columns[placedCol].push(ev);
+          positioned.push({ event: ev, colIndex: placedCol, totalCols: 0 });
+        });
+        const total = columns.length;
+        positioned.forEach(p => {
+          if (cluster.includes(p.event)) {
+            p.totalCols = total;
+          }
+        });
+      });
+
+      return positioned;
+    }
+
+    function renderVerticalTimeline() {
+      const canvas = document.getElementById('verticalCanvas');
+      let html = '';
+
+      // 1. Background Hour Grid (05:00 to 23:00)
+      for (let h = 5; h < 24; h++) {
+        const topPx = (h * 60 - START_DAY_MIN) * PX_PER_MIN;
+        const hourLabel = `${String(h).padStart(2, '0')}:00`;
+        html += `
+          <div onclick="onEmptySlotClick(event, ${h * 60})"
+               class="absolute left-0 right-0 border-t border-slate-200 hover:bg-indigo-50/40 transition cursor-pointer group"
+               style="top: ${topPx}px; height: 60px;">
+            <div class="w-14 pr-2 pt-1 text-right text-[11px] font-bold text-slate-400 group-hover:text-indigo-600 select-none">
+              ${hourLabel}
+            </div>
+            <div class="absolute left-14 right-0 top-[30px] border-t border-dashed border-slate-100 pointer-events-none"></div>
+          </div>
+        `;
+      }
+
+      // 2. Current Time Indicator Line (if viewing today)
+      if (appState.selectedDate === getLocalTodayStr()) {
+        const now = new Date();
+        const nowMin = now.getHours() * 60 + now.getMinutes();
+        if (nowMin >= START_DAY_MIN && nowMin <= END_DAY_MIN) {
+          const nowTop = (nowMin - START_DAY_MIN) * PX_PER_MIN;
+          html += `
+            <div class="absolute left-12 right-0 z-20 pointer-events-none flex items-center" style="top: ${nowTop}px;">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500 -ml-1 shadow-xs"></span>
+              <div class="flex-1 h-[2px] bg-rose-500"></div>
+            </div>
+          `;
+        }
+      }
+
+      // 3. Scheduled Blocks (Overlap-calculated)
+      const dayEvents = appState.tasks.filter(t => t.date === appState.selectedDate && t.startMin !== null);
+      const layoutItems = computeOverlapLayout(dayEvents);
+
+      layoutItems.forEach(({ event: ev, colIndex, totalCols }) => {
+        const meta = getCategoryMeta(ev.category);
+        const topPx = Math.max(0, (ev.startMin - START_DAY_MIN) * PX_PER_MIN);
+        const heightPx = Math.max(28, ev.durationMin * PX_PER_MIN);
+        const widthPct = 100 / totalCols;
+        const leftPct = colIndex * widthPct;
+
+        // Linked individual problems preview
+        let problemChipsHtml = '';
+        let problemBadgeHtml = '';
+        if (ev.sectionId && ev.lectureId) {
+          const { lec } = findSectionAndLecture(ev.sectionId, ev.lectureId);
+          if (lec && lec.items.length > 0) {
+            const doneCount = lec.items.filter(i => i.done).length;
+            problemBadgeHtml = `
+              <button onclick="event.stopPropagation(); openVerticalEditModal('${ev.id}')"
+                      class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/90 border border-slate-300 text-slate-700 hover:bg-white shrink-0">
+                問題 ${doneCount}/${lec.items.length}
+              </button>
+            `;
+            if (heightPx >= 75 && totalCols === 1) {
+              const previewItems = lec.items.slice(0, 8);
+              problemChipsHtml = `
+                <div class="mt-1.5 flex flex-wrap gap-1" onclick="event.stopPropagation()">
+                  ${previewItems.map(it => `
+                    <button onclick="toggleIndividualProblem('${ev.sectionId}', '${ev.lectureId}', '${it.id}')"
+                            class="px-1.5 py-0.5 rounded text-[10px] font-semibold border transition ${it.done ? 'bg-indigo-600 text-white border-indigo-600 line-through opacity-85' : 'bg-white/95 text-slate-700 border-slate-300 hover:border-indigo-500'}">
+                      ${it.done ? '✓' : '□'} ${escapeHtml(it.label)}
+                    </button>
+                  `).join('')}
+                  ${lec.items.length > 8 ? `<button onclick="openVerticalEditModal('${ev.id}')" class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-white/80 text-indigo-700 border border-indigo-200">+他${lec.items.length - 8}問</button>` : ''}
+                </div>
+              `;
+            }
+          }
+        }
+
+        html += `
+          <div id="vblock_${ev.id}"
+               onmousedown="startVerticalMove(event, '${ev.id}')"
+               ontouchstart="startVerticalMove(event, '${ev.id}')"
+               onclick="openVerticalEditModal('${ev.id}')"
+               class="absolute z-10 pr-1 pb-0.5 transition-shadow"
+               style="top: ${topPx}px; height: ${heightPx}px; left: calc(3.75rem + (100% - 4rem) * ${leftPct / 100}); width: calc((100% - 4rem) * ${widthPct / 100});">
+            <div class="relative h-full w-full rounded-xl border-l-4 border ${meta.blockBg} ${ev.completed ? 'opacity-65' : 'shadow-xs hover:shadow-md'} px-2.5 py-1.5 flex flex-col justify-between overflow-hidden cursor-pointer">
+              <div>
+                <div class="flex items-center justify-between gap-1.5">
+                  <div class="flex items-center gap-1.5 min-w-0">
+                    <button onclick="event.stopPropagation(); toggleTaskComplete('${ev.id}')"
+                            class="w-4 h-4 rounded border flex items-center justify-center shrink-0 ${ev.completed ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-400'}">
+                      ${ev.completed ? '<i data-lucide="check" class="w-3 h-3"></i>' : ''}
+                    </button>
+                    <span class="text-[10px] font-bold opacity-80 whitespace-nowrap">
+                      ${minToTimeStr(ev.startMin)}-${minToTimeStr(ev.startMin + ev.durationMin)}
+                    </span>
+                    <span class="text-[10px] font-bold px-1 rounded bg-white/70 whitespace-nowrap">${meta.label}</span>
+                  </div>
+                  ${problemBadgeHtml}
+                </div>
+
+                <div class="text-xs font-bold leading-snug truncate mt-0.5 ${ev.completed ? 'line-through' : ''}">
+                  ${escapeHtml(ev.title)}
+                </div>
+
+                ${problemChipsHtml}
+              </div>
+
+              <!-- Bottom Resize Handle -->
+              <div onmousedown="startVerticalResize(event, '${ev.id}')"
+                   ontouchstart="startVerticalResize(event, '${ev.id}')"
+                   onclick="event.stopPropagation()"
+                   class="h-2.5 w-full cursor-ns-resize flex items-center justify-center opacity-50 hover:opacity-100 mt-auto">
+                <span class="w-8 h-1 rounded-full bg-current"></span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      canvas.innerHTML = html;
+    }
+
+    // ==================== DRAG / RESIZE / DROP INTERACTIONS ON VERTICAL ====================
+    let draggedTaskIdFromList = null;
+
+    function onTaskDragStart(event, taskId) {
+      draggedTaskIdFromList = taskId;
+      if (event.dataTransfer) {
+        event.dataTransfer.setData('text/plain', taskId);
+        event.dataTransfer.effectAllowed = 'move';
+      }
+    }
+
+    function onVerticalDragOver(event) {
+      event.preventDefault();
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = 'move';
+      }
+    }
+
+    function onVerticalDrop(event) {
+      event.preventDefault();
+      const taskId = draggedTaskIdFromList || (event.dataTransfer && event.dataTransfer.getData('text/plain'));
+      draggedTaskIdFromList = null;
+      if (!taskId) return;
+
+      const canvas = document.getElementById('verticalCanvas');
+      const rect = canvas.getBoundingClientRect();
+      const offsetY = event.clientY - rect.top;
+      const rawMin = START_DAY_MIN + Math.round(offsetY / PX_PER_MIN);
+      const snappedMin = Math.max(START_DAY_MIN, Math.min(END_DAY_MIN - 30, Math.round(rawMin / 15) * 15));
+
+      const task = appState.tasks.find(t => t.id === taskId);
+      if (task) {
+        task.startMin = snappedMin;
+        saveState();
+        renderAll();
+      }
+    }
+
+    function onEmptySlotClick(event, hourStartMin) {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const relY = event.clientY - rect.top;
+      const startMin = relY >= 30 ? hourStartMin + 30 : hourStartMin;
+      openVerticalQuickModal(startMin);
+    }
+
+    // Move or Resize existing block via mouse/touch
+    let activeDragState = null;
+
+    function getClientY(event) {
+      if (event.touches && event.touches.length > 0) return event.touches[0].clientY;
+      return event.clientY;
+    }
+
+    function startVerticalMove(event, taskId) {
+      if (event.target.closest('button')) return;
+      const task = appState.tasks.find(t => t.id === taskId);
+      if (!task) return;
+      activeDragState = {
+        mode: 'move',
+        taskId,
+        startY: getClientY(event),
+        origStartMin: task.startMin,
+        origDurationMin: task.durationMin,
+        moved: false
+      };
+      window.addEventListener('mousemove', onVerticalPointerMove);
+      window.addEventListener('mouseup', onVerticalPointerEnd);
+      window.addEventListener('touchmove', onVerticalPointerMove, { passive: false });
+      window.addEventListener('touchend', onVerticalPointerEnd);
+    }
+
+    function startVerticalResize(event, taskId) {
+      event.stopPropagation();
+      const task = appState.tasks.find(t => t.id === taskId);
+      if (!task) return;
+      activeDragState = {
+        mode: 'resize',
+        taskId,
+        startY: getClientY(event),
+        origStartMin: task.startMin,
+        origDurationMin: task.durationMin,
+        moved: false
+      };
+      window.addEventListener('mousemove', onVerticalPointerMove);
+      window.addEventListener('mouseup', onVerticalPointerEnd);
+      window.addEventListener('touchmove', onVerticalPointerMove, { passive: false });
+      window.addEventListener('touchend', onVerticalPointerEnd);
+    }
+
+    function onVerticalPointerMove(event) {
+      if (!activeDragState) return;
+      const dy = getClientY(event) - activeDragState.startY;
+      if (Math.abs(dy) > 4) activeDragState.moved = true;
+      if (!activeDragState.moved) return;
+      if (event.cancelable) event.preventDefault();
+
+      const deltaMin = Math.round((dy / PX_PER_MIN) / 15) * 15;
+      const task = appState.tasks.find(t => t.id === activeDragState.taskId);
+      if (!task) return;
+
+      if (activeDragState.mode === 'move') {
+        const nextStart = Math.max(START_DAY_MIN, Math.min(END_DAY_MIN - task.durationMin, activeDragState.origStartMin + deltaMin));
+        task.startMin = nextStart;
+      } else if (activeDragState.mode === 'resize') {
+        const nextDur = Math.max(15, Math.min(END_DAY_MIN - task.startMin, activeDragState.origDurationMin + deltaMin));
+        task.durationMin = nextDur;
+      }
+      renderVerticalTimeline();
+      renderTodayTasksList();
+      lucide.createIcons();
+    }
+
+    function onVerticalPointerEnd() {
+      if (activeDragState && activeDragState.moved) {
+        saveState();
+        // Suppress immediate click event after drag
+        const suppressClick = e => {
+          e.stopPropagation();
+          window.removeEventListener('click', suppressClick, true);
+        };
+        window.addEventListener('click', suppressClick, true);
+      }
+      activeDragState = null;
+      window.removeEventListener('mousemove', onVerticalPointerMove);
+      window.removeEventListener('mouseup', onVerticalPointerEnd);
+      window.removeEventListener('touchmove', onVerticalPointerMove);
+      window.removeEventListener('touchend', onVerticalPointerEnd);
+    }
+
+    // ==================== VERTICAL MODAL (CREATE & EDIT) ====================
+    function openVerticalQuickModal(defaultStartMin) {
+      document.getElementById('verticalModalTitle').textContent = 'バーチカルに予定・タスクを追加';
+      document.getElementById('vmTaskId').value = '';
+      document.getElementById('vmCategory').value = 'study';
+      document.getElementById('vmTitle').value = '';
+      document.getElementById('vmStartTime').value = minToTimeStr(defaultStartMin);
+      document.getElementById('vmDuration').value = '60';
+      document.getElementById('vmCompleted').checked = false;
+      document.getElementById('vmLinkedProblemsBox').classList.add('hidden');
+      document.getElementById('vmUnscheduleBtn').classList.add('hidden');
+      document.getElementById('vmDeleteBtn').classList.add('hidden');
+      openModal('verticalModal');
+      setTimeout(() => document.getElementById('vmTitle').focus(), 50);
+    }
+
+    function openVerticalEditModal(taskId) {
+      const task = appState.tasks.find(t => t.id === taskId);
+      if (!task) return;
+      document.getElementById('verticalModalTitle').textContent = '予定・タスクの編集（相互連動）';
+      document.getElementById('vmTaskId').value = task.id;
+      document.getElementById('vmCategory').value = task.category || 'study';
+      document.getElementById('vmTitle').value = task.title;
+      document.getElementById('vmStartTime').value = minToTimeStr(task.startMin !== null ? task.startMin : 540);
+      document.getElementById('vmDuration').value = String(task.durationMin || 60);
+      document.getElementById('vmCompleted').checked = !!task.completed;
+      document.getElementById('vmUnscheduleBtn').classList.remove('hidden');
+      document.getElementById('vmDeleteBtn').classList.remove('hidden');
+
+      populateVerticalModalProblems(task);
+      openModal('verticalModal');
+    }
+
+    function populateVerticalModalProblems(task) {
+      const box = document.getElementById('vmLinkedProblemsBox');
+      const list = document.getElementById('vmLinkedProblemsList');
+      const prog = document.getElementById('vmLinkedProgress');
+
+      if (!task.sectionId || !task.lectureId) {
+        box.classList.add('hidden');
+        return;
+      }
+      const { lec } = findSectionAndLecture(task.sectionId, task.lectureId);
+      if (!lec || lec.items.length === 0) {
+        box.classList.add('hidden');
+        return;
+      }
+
+      box.classList.remove('hidden');
+      const doneCount = lec.items.filter(i => i.done).length;
+      prog.textContent = `${doneCount} / ${lec.items.length} 問完了`;
+
+      list.innerHTML = lec.items.map(it => `
+        <button onclick="toggleIndividualProblem('${task.sectionId}', '${task.lectureId}', '${it.id}')"
+                class="px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition ${it.done ? 'bg-indigo-600 text-white border-indigo-600 line-through' : 'bg-white text-slate-700 border-slate-300 hover:border-indigo-500'}">
+          ${it.done ? '✓' : '□'} ${escapeHtml(it.label)}
+        </button>
+      `).join('');
+    }
+
+    function saveVerticalModal() {
+      const taskId = document.getElementById('vmTaskId').value;
+      const category = document.getElementById('vmCategory').value;
+      const title = document.getElementById('vmTitle').value.trim();
+      if (!title) {
+        alert('タイトルを入力してください');
+        return;
+      }
+      const startMin = timeStrToMin(document.getElementById('vmStartTime').value) ?? 540;
+      const durationMin = parseInt(document.getElementById('vmDuration').value, 10) || 60;
+      const completed = document.getElementById('vmCompleted').checked;
+
+      if (taskId) {
+        const task = appState.tasks.find(t => t.id === taskId);
+        if (task) {
+          task.category = category;
+          task.title = title;
+          task.startMin = Math.max(START_DAY_MIN, Math.min(END_DAY_MIN - durationMin, startMin));
+          task.durationMin = durationMin;
+          if (task.completed !== completed) {
+            toggleTaskComplete(task.id);
+          }
+        }
+      } else {
+        appState.tasks.push({
+          id: `vtask_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          date: appState.selectedDate,
+          category,
+          title,
+          startMin: Math.max(START_DAY_MIN, Math.min(END_DAY_MIN - durationMin, startMin)),
+          durationMin,
+          completed,
+          sectionId: null,
+          lectureId: null,
+          problemId: null
+        });
+      }
+
+      saveState();
+      closeModal('verticalModal');
+      renderAll();
+    }
+
+    function unscheduleFromVertical() {
+      const taskId = document.getElementById('vmTaskId').value;
+      if (taskId) removeTaskFromVertical(taskId);
+      closeModal('verticalModal');
+    }
+
+    function deleteTaskCompletely() {
+      const taskId = document.getElementById('vmTaskId').value;
+      if (taskId) deleteTaskById(taskId);
+      closeModal('verticalModal');
+    }
+
+    // ==================== RENDER: LECTURES & INDIVIDUAL CHECKLIST TAB ====================
+    function renderLecturesTab() {
+      const subjectFilter = document.getElementById('subjectFilterSelect').value;
+      const statusFilter = document.getElementById('statusFilterSelect').value;
+      const chipsContainer = document.getElementById('sectionJumpChips');
+      const container = document.getElementById('lectureSectionsContainer');
+
+      const filteredSections = appState.sections.filter(sec => {
+        if (subjectFilter !== 'ALL' && sec.subject !== subjectFilter) return false;
+        return true;
+      });
+
+      chipsContainer.innerHTML = filteredSections.map(sec => `
+        <button onclick="jumpToLectureSection('${sec.id}')"
+                class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 whitespace-nowrap transition">
+          ${escapeHtml(sec.title)}
+        </button>
+      `).join('');
+
+      container.innerHTML = filteredSections.map(sec => {
+        const visibleLectures = sec.lectures.filter(lec => {
+          if (statusFilter === 'UNWATCHED') return !lec.watched;
+          if (statusFilter === 'INCOMPLETE_REVIEW') return lec.items.some(it => !it.done);
+          return true;
+        });
+
+        const watchedCount = sec.lectures.filter(l => l.watched).length;
+        const totalProbs = sec.lectures.reduce((acc, l) => acc + l.items.length, 0);
+        const doneProbs = sec.lectures.reduce((acc, l) => acc + l.items.filter(i => i.done).length, 0);
+
+        return `
+          <div id="sec_card_${sec.id}" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div onclick="toggleSectionCollapse('${sec.id}')"
+                 class="px-4 py-3 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 cursor-pointer hover:bg-slate-100/80 transition">
+              <div class="flex items-center gap-2">
+                <i data-lucide="${sec.collapsed ? 'chevron-right' : 'chevron-down'}" class="w-4 h-4 text-slate-500"></i>
+                <span class="text-xs font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">${escapeHtml(sec.subject)}</span>
+                <h3 class="font-bold text-sm text-slate-900">${escapeHtml(sec.title)}</h3>
+              </div>
+              <div class="flex items-center gap-3 text-xs">
+                <span class="text-slate-600">視聴: <strong class="text-slate-900">${watchedCount}/${sec.lectures.length}</strong></span>
+                <span class="text-slate-600">問題チェック: <strong class="text-emerald-700">${doneProbs}/${totalProbs}</strong></span>
+              </div>
+            </div>
+
+            ${sec.collapsed ? '' : `
+              <div class="divide-y divide-slate-100">
+                ${visibleLectures.length === 0 ? `<div class="p-4 text-xs text-slate-400">条件に一致する講義回はありません。</div>` : ''}
+                ${visibleLectures.map(lec => {
+                  const lecDone = lec.items.filter(i => i.done).length;
+                  const allProbsDone = lec.items.length > 0 && lecDone === lec.items.length;
+                  return `
+                    <div class="p-3.5 hover:bg-slate-50/50 transition">
+                      <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <div class="flex items-center gap-2">
+                          <button onclick="toggleLectureWatched('${sec.id}', '${lec.id}')"
+                                  class="px-2.5 py-1 rounded-lg text-xs font-semibold border transition flex items-center gap-1.5 ${lec.watched ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-300 hover:border-indigo-500'}">
+                            <span>${lec.watched ? '✓ 視聴済' : '未視聴'}</span>
+                          </button>
+                          <span class="font-bold text-xs sm:text-sm text-slate-900">${escapeHtml(lec.title)}</span>
+                          <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${allProbsDone ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}">
+                            ${lecDone} / ${lec.items.length}
+                          </span>
+                        </div>
+                        <button onclick="sendLectureToTodayTask('${sec.id}', '${lec.id}')"
+                                class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition">
+                          + 今日のタスクへ送る
+                        </button>
+                      </div>
+
+                      <!-- Individual Problem Checkboxes -->
+                      <div class="flex flex-wrap gap-1.5 pl-1">
+                        ${lec.items.map(it => `
+                          <button onclick="toggleIndividualProblem('${sec.id}', '${lec.id}', '${it.id}')"
+                                  class="px-2.5 py-1.5 rounded-lg text-xs font-medium border transition flex items-center gap-1.5 touch-manipulation ${it.done ? 'bg-emerald-50 border-emerald-300 text-emerald-800 line-through' : 'bg-white border-slate-300 text-slate-800 hover:border-indigo-500'}">
+                            <span class="w-3.5 h-3.5 rounded-xs border flex items-center justify-center text-[10px] ${it.done ? 'bg-emerald-600 border-emerald-600 text-white' : 'border-slate-400'}">
+                              ${it.done ? '✓' : ''}
+                            </span>
+                            <span>${escapeHtml(it.label)}</span>
+                          </button>
+                        `).join('')}
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleSectionCollapse(sectionId) {
+      const sec = appState.sections.find(s => s.id === sectionId);
+      if (!sec) return;
+      sec.collapsed = !sec.collapsed;
+      saveState();
+      renderLecturesTab();
+      lucide.createIcons();
+    }
+
+    function expandCollapseAllSections(expand) {
+      appState.sections.forEach(s => { s.collapsed = !expand; });
+      saveState();
+      renderLecturesTab();
+      lucide.createIcons();
+    }
+
+    function jumpToLectureSection(sectionId) {
+      const sec = appState.sections.find(s => s.id === sectionId);
+      if (sec && sec.collapsed) {
+        sec.collapsed = false;
+        renderLecturesTab();
+        lucide.createIcons();
+      }
+      const el = document.getElementById(`sec_card_${sectionId}`);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function scrollLectureList(dir) {
+      const container = document.getElementById('lectureSectionsContainer');
+      if (!container) return;
+      container.scrollTo({ top: dir === 'top' ? 0 : container.scrollHeight, behavior: 'smooth' });
+    }
+
+    function sendLectureToTodayTask(sectionId, lectureId) {
+      const { sec, lec } = findSectionAndLecture(sectionId, lectureId);
+      if (!sec || !lec) return;
+      appState.tasks.push({
+        id: `fromlec_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        date: appState.selectedDate,
+        category: 'study',
+        title: `${sec.title} ${lec.title} 問題・復習演習`,
+        startMin: null,
+        durationMin: 60,
+        completed: false,
+        sectionId: sec.id,
+        lectureId: lec.id,
+        problemId: null
+      });
+      saveState();
+      renderAll();
+      switchTab('today');
+    }
+
+    // ==================== RENDER: DASHBOARD ====================
+    function renderDashboard() {
+      const todayStr = getLocalTodayStr();
+      document.getElementById('dashTodayStr').textContent = formatJapaneseDateWithDow(todayStr);
+      document.getElementById('dashShortDays').textContent = `${diffDaysFromToday('2027-12-12')}日`;
+      document.getElementById('dashEssayDays').textContent = `${diffDaysFromToday('2028-08-20')}日`;
+
+      let totalProbs = 0;
+      let doneProbs = 0;
+      const subjectMap = {};
+
+      appState.sections.forEach(sec => {
+        if (!subjectMap[sec.subject]) {
+          subjectMap[sec.subject] = { watched: 0, totalLecs: 0, doneItems: 0, totalItems: 0 };
+        }
+        sec.lectures.forEach(lec => {
+          subjectMap[sec.subject].totalLecs += 1;
+          if (lec.watched) subjectMap[sec.subject].watched += 1;
+          lec.items.forEach(it => {
+            totalProbs += 1;
+            subjectMap[sec.subject].totalItems += 1;
+            if (it.done) {
+              doneProbs += 1;
+              subjectMap[sec.subject].doneItems += 1;
+            }
+          });
+        });
+      });
+
+      const rate = totalProbs > 0 ? Math.round((doneProbs / totalProbs) * 100) : 0;
+      document.getElementById('dashReviewRate').textContent = `${rate}%`;
+      document.getElementById('dashReviewDetail').textContent = `${doneProbs} / ${totalProbs} 項目完了`;
+
+      const listEl = document.getElementById('subjectProgressList');
+      listEl.innerHTML = Object.entries(subjectMap).map(([subj, st]) => {
+        const lecPct = st.totalLecs > 0 ? Math.round((st.watched / st.totalLecs) * 100) : 0;
+        const itemPct = st.totalItems > 0 ? Math.round((st.doneItems / st.totalItems) * 100) : 0;
+        return `
+          <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="font-bold text-xs sm:text-sm text-slate-900">${escapeHtml(subj)}</span>
+              <div class="flex items-center gap-3 text-xs">
+                <span>講義視聴: <strong>${st.watched}/${st.totalLecs}回</strong> (${lecPct}%)</span>
+                <span>問題チェック: <strong class="text-emerald-700">${st.doneItems}/${st.totalItems}問</strong> (${itemPct}%)</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div class="bg-indigo-600 h-2 rounded-full" style="width: ${lecPct}%"></div>
+              </div>
+              <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div class="bg-emerald-500 h-2 rounded-full" style="width: ${itemPct}%"></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ==================== COURSE VISIBILITY FILTER ====================
+    function openCourseFilterModal() {
+      const list = document.getElementById('courseVisibilityList');
+      list.innerHTML = appState.sections.map(sec => {
+        const visible = !appState.hiddenSectionIds.includes(sec.id);
+        const watchedCount = sec.lectures.filter(l => l.watched).length;
+        return `
+          <label class="flex items-center justify-between gap-2 p-2 rounded-lg bg-white border border-slate-200 cursor-pointer hover:bg-slate-50">
+            <div class="flex items-center gap-2">
+              <input type="checkbox" ${visible ? 'checked' : ''} onchange="toggleCourseVisibility('${sec.id}')" class="w-4 h-4 rounded text-indigo-600" />
+              <span class="text-xs font-semibold text-slate-800">${escapeHtml(sec.title)}</span>
+            </div>
+            <span class="text-[11px] text-slate-500">${watchedCount}/${sec.lectures.length}視聴済</span>
+          </label>
+        `;
+      }).join('');
+      openModal('courseFilterModal');
+    }
+
+    function toggleCourseVisibility(sectionId) {
+      if (appState.hiddenSectionIds.includes(sectionId)) {
+        appState.hiddenSectionIds = appState.hiddenSectionIds.filter(id => id !== sectionId);
+      } else {
+        appState.hiddenSectionIds.push(sectionId);
+      }
+      saveState();
+      renderTaskSelectors();
+    }
+
+    function setCourseVisibilityPreset(mode) {
+      if (mode === 'all') {
+        appState.hiddenSectionIds = [];
+      } else if (mode === 'hideCompleted') {
+        appState.hiddenSectionIds = appState.sections
+          .filter(sec => sec.lectures.every(l => l.watched))
+          .map(sec => sec.id);
+      }
+      saveState();
+      openCourseFilterModal();
+      renderTaskSelectors();
+    }
+
+    // ==================== UI & TAB / PANEL HELPERS ====================
+    function switchTab(tabName) {
+      ['today', 'lectures', 'dashboard'].forEach(name => {
+        const view = document.getElementById(`view-${name}`);
+        const btn = document.getElementById(`tab-${name}`);
+        if (name === tabName) {
+          view.classList.remove('hidden');
+          btn.classList.add('bg-indigo-600', 'text-white', 'shadow-sm');
+          btn.classList.remove('text-slate-600', 'hover:bg-slate-100');
+        } else {
+          view.classList.add('hidden');
+          btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm');
+          btn.classList.add('text-slate-600', 'hover:bg-slate-100');
+        }
+      });
+      lucide.createIcons();
+    }
+
+    function togglePanel(panelId) {
+      const panel = document.getElementById(panelId);
+      const icon = document.getElementById(`${panelId}Icon`);
+      panel.classList.toggle('hidden');
+      if (icon) {
+        icon.setAttribute('data-lucide', panel.classList.contains('hidden') ? 'chevron-down' : 'chevron-up');
+        lucide.createIcons();
+      }
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function openBackupModal() {
+      openModal('backupModal');
+    }
+
+    function openSettingsModal() {
+      document.getElementById('forgettingDaysInput').value = appState.forgettingDays.join(', ');
+      openModal('settingsModal');
+    }
+
+    function saveSettings() {
+      const raw = document.getElementById('forgettingDaysInput').value;
+      const nums = raw.split(',').map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0);
+      appState.forgettingDays = nums.length > 0 ? nums : [1, 3, 7, 14, 30];
+      saveState();
+      closeModal('settingsModal');
+    }
+
+    function exportJsonBackup() {
+      const payload = JSON.stringify(appState, null, 2);
+      const blob = new Blob([payload], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cpa-study-manager-backup-${getLocalTodayStr()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function importJsonBackup(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const imported = JSON.parse(e.target.result);
+          if (!imported.sections || !Array.isArray(imported.tasks)) {
+            alert('有効なバックアップJSONファイルではありません。');
+            return;
+          }
+          appState = {
+            ...appState,
+            ...imported,
+            selectedDate: getLocalTodayStr()
+          };
+          saveState();
+          closeModal('backupModal');
+          renderAll();
+          alert('バックアップデータを復元しました！');
+        } catch (err) {
+          alert('JSONの読み込みに失敗しました。');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetAllData() {
+      if (!confirm('すべてのチェック履歴と予定を初期状態（TACプリセット）に戻しますか？')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      appState = {
+        selectedDate: getLocalTodayStr(),
+        forgettingDays: [1, 3, 7, 14, 30],
+        hiddenSectionIds: [],
+        sections: buildInitialSections(),
+        tasks: []
+      };
+      seedInitialTodayTasks();
+      saveState();
+      closeModal('settingsModal');
+      renderAll();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderAll() {
+      renderHeaderAndDate();
+      renderTaskSelectors();
+      renderTodayTasksList();
+      renderVerticalTimeline();
+      renderLecturesTab();
+      renderDashboard();
+      lucide.createIcons();
+    }
+
+    // ==================== BOOTSTRAP ====================
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      renderAll();
+      // Scroll vertical timeline to around 08:00 (180px) on startup
+      const scrollArea = document.getElementById('verticalScrollArea');
+      if (scrollArea) scrollArea.scrollTop = 180;
+    });
+  </script>
+</body>
+</html>
